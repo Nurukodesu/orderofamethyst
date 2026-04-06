@@ -1,0 +1,15 @@
+sigil [Mind's Reflection] () -> (Entity) {
+    NORTH_EAST qaq
+}
+
+sigil [Compass' Purification] (Entity) -> (Vector) {
+	EAST aa
+}
+
+sigil [Compass' Purification II] (Entity) -> (Vector) {
+	NORTH_EAST dd
+}
+
+sigil [Alidade's Purification] (Entity) -> (Vector) {
+	EAST wa
+}

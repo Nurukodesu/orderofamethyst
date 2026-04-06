@@ -1,0 +1,15 @@
+sigil [Mind's Reflection] () -> (Entity) {
+    EAST aqaa
+}
+
+rawfn get_caster() -> Entity {
+	Mind's Reflection;
+	Compass's Purification;
+	Numerical's Reflection: 0;
+}
+
+// test
+fn main() {
+	let player: Entity = get_caster();
+	let count: Num = 1*2 + 2*4;
+}
