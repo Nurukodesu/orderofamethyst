@@ -1,3 +1,5 @@
+// Basic Patterns
+
 sigil [Mind's Reflection] () -> (Entity) {
     NORTH_EAST qaq
 }
@@ -13,3 +15,17 @@ sigil [Compass' Purification II] (Entity) -> (Vector) {
 sigil [Alidade's Purification] (Entity) -> (Vector) {
 	EAST wa
 }
+
+sigil [Numerical Reflection] () -> (Num)
+
+sigil [Bookkeeper's Gambit] (Many) -> (Many)
+
+// Logical Operators
+
+sigil [Equality Distillation] (Any, Any) -> (Bool)
+
+// Escaping Patterns
+
+sigil [Introspection] () -> ()
+
+sigil [Retrospection] () -> (List)

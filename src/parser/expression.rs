@@ -1,6 +1,6 @@
 use crate::{
     ast::{Expression, Op},
-    parser::common::identifier,
+    parser::{common::identifier, raw::sigil_call},
 };
 use winnow::{
     Parser, Result,
@@ -22,6 +22,7 @@ fn first_level(input: &mut &str) -> Result<Expression> {
         ),
         boolean,
         float.map(Expression::Num),
+		pattern,
         vector,
         list,
         atom_identifier,
@@ -150,5 +151,15 @@ pub fn list(input: &mut &str) -> Result<Expression> {
         (multispace0, ']', multispace0),
     )
     .map(Expression::List)
+    .parse_next(input)
+}
+
+pub fn pattern(input: &mut &str) -> Result<Expression> {
+    delimited(
+        (multispace0, '['),
+        sigil_call,
+        (']', multispace0),
+    )
+	.map(|sigil| Expression::Pattern(sigil))
     .parse_next(input)
 }

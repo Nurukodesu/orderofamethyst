@@ -1,0 +1,9 @@
+sigil [__LOAD_SYMBOL] () -> (Any)
+sigil [__LOAD_SYMBOL_REL] () -> (Any)
+sigil [__LOAD_SYMBOL_PIE] () -> (Any)
+
+sigil [__MARK_BASE] () -> ()
+sigil [__MARK_END] () -> ()
+
+sigil [__START_SCOPE] () -> ()
+sigil [__END_SCOPE] () -> ()

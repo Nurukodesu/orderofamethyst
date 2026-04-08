@@ -19,15 +19,14 @@ pub fn identifier(input: &mut &str) -> Result<String> {
 
 pub fn iota_type(input: &mut &str) -> Result<IotaType> {
     alt((
+		"Any".value(IotaType::Any),
         "Num".value(IotaType::Num),
         "Bool".value(IotaType::Bool),
         "Vector".value(IotaType::Vector),
         "Entity".value(IotaType::Entity),
         "Pattern".value(IotaType::Pattern),
         "Many".value(IotaType::Many),
-        "AnyList".value(IotaType::AnyList),
-        ("List", delimited('[', iota_type, ']'))
-            .map(|(_, r#type)| IotaType::List(Box::new(r#type))),
+        "List".value(IotaType::List),
     ))
     .parse_next(input)
 }

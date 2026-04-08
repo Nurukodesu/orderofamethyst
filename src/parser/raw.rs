@@ -56,20 +56,27 @@ pub fn sigil_declaration(input: &mut &str) -> Result<Statement> {
             sigil_name,
             sigil_io,
             preceded((multispace0, "->", multispace0), sigil_io),
-            delimited(
+            opt(delimited(
                 (multispace0, '{', multispace0),
-                separated_pair(direction, multispace1, angle_path),
+                separated_pair(direction, multispace1, opt(angle_path)),
                 (multispace0, '}', multispace0),
-            ),
+            )),
         ),
     )
-    .map(|(name, params, returns, (initial_direction, angle_path))| {
+    .map(|(name, params, returns, sign)| {
+		let (initial_direction, path) = match sign {
+			Some((d, p)) => (d, p),
+			None => (Direction::NONE, Some(AnglePath::empty()))
+		};
         Statement::SigilDecl(Sigil {
             name,
             params,
             returns,
             initial_direction,
-            angle_path,
+            angle_path: match  path{
+				Some(s) => s,
+				None => AnglePath::empty()
+			} ,
         })
     })
     .parse_next(input)
@@ -84,7 +91,7 @@ fn sigil_identifier(input: &mut &str) -> Result<String> {
 fn sigil_modifier(input: &mut &str) -> Result<Option<String>> {
     opt(preceded(
         (multispace0, ':', multispace0),
-        take_while(0.., ('0'..='9', 'a'..='z', 'A'..='Z', '-', '\'', ' ')),
+        take_while(0.., ('0'..='9', 'a'..='z', 'A'..='Z', '-', '_', '\'', ' ')),
     ))
     .map(|modifier: Option<&str>| match modifier {
         Some(s) => Some(s.to_string()),
@@ -93,7 +100,7 @@ fn sigil_modifier(input: &mut &str) -> Result<Option<String>> {
     .parse_next(input)
 }
 
-fn sigil_call(input: &mut &str) -> Result<SigilCall> {
+pub fn sigil_call(input: &mut &str) -> Result<SigilCall> {
     terminated(
         (sigil_identifier, sigil_modifier),
         (multispace0, ';', multispace0),
