@@ -7,6 +7,12 @@ The AST is then turned into flat structure with pseudo-patterns and hex patterns
 Next step does the scope and symbol resolution to turn IR 1 -> IR 2
 IR 2 is a vector of hexpatterns
 
+## Todo
+
+-If parameter iota is directly on the stack before function in order, skip the fisherman and parameter pushing
+-Move the variable instead of copying for final call of variable
+
 ## Things to clean up
+
 Replace match.... None => eprintln! with .expect(format!) for undefind symbol/sigil
 Replace raw pushes with ir.push()

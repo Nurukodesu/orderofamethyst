@@ -1,7 +1,7 @@
 use std::vec;
 
 use winnow::{
-    Parser, Result,
+    Parser, ModalResult,
     ascii::{multispace0, multispace1},
     combinator::{delimited, opt, preceded},
 };
@@ -11,7 +11,7 @@ use crate::{
     parser::{block, expression},
 };
 
-pub fn conditional(input: &mut &str) -> Result<Statement> {
+pub fn conditional(input: &mut &str) -> ModalResult<Statement> {
     preceded(
         (multispace0, "if", multispace1),
         (

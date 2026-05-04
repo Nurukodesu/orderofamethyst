@@ -3,17 +3,17 @@ use crate::{
     parser::{common::identifier, raw::sigil_call},
 };
 use winnow::{
-    Parser, Result,
+    Parser, ModalResult,
     ascii::{float, multispace0},
     combinator::{alt, delimited, opt, separated, separated_foldl1},
 };
 
-pub fn expression(input: &mut &str) -> Result<Expression> {
-    fourth_level.parse_next(input)
+pub fn expression(input: &mut &str) -> ModalResult<Expression> {
+    fifth_level.parse_next(input)
 }
 
 // Paranthese, Literal
-fn first_level(input: &mut &str) -> Result<Expression> {
+fn first_level(input: &mut &str) -> ModalResult<Expression> {
     alt((
         delimited(
             (multispace0, '(', multispace0),
@@ -22,7 +22,7 @@ fn first_level(input: &mut &str) -> Result<Expression> {
         ),
         boolean,
         float.map(Expression::Num),
-		pattern,
+        pattern,
         vector,
         list,
         atom_identifier,
@@ -30,10 +30,34 @@ fn first_level(input: &mut &str) -> Result<Expression> {
     .parse_next(input)
 }
 
-// Multiplication, Division, Remainder
-fn second_level(input: &mut &str) -> Result<Expression> {
+fn second_level(input: &mut &str) -> ModalResult<Expression> {
     separated_foldl1(
         first_level,
+        (
+            multispace0,
+            alt(("^",)),
+            multispace0,
+        ),
+        |lhs, (_, op_sign, _), rhs| {
+            let op = match op_sign {
+                "^" => Op::Power,
+                _ => unreachable!(),
+            };
+            Expression::BinaryOps {
+                lhs: Box::new(lhs),
+                rhs: Box::new(rhs),
+                op,
+            }
+        },
+    )
+    .parse_next(input)
+}
+
+
+// Multiplication, Division, Remainder
+fn third_level(input: &mut &str) -> ModalResult<Expression> {
+    separated_foldl1(
+        second_level,
         (multispace0, alt(('*', '/', '%')), multispace0),
         |lhs, (_, op_sign, _), rhs| {
             let op = match op_sign {
@@ -53,9 +77,9 @@ fn second_level(input: &mut &str) -> Result<Expression> {
 }
 
 // Addition, Subtraction
-fn third_level(input: &mut &str) -> Result<Expression> {
+fn fourth_level(input: &mut &str) -> ModalResult<Expression> {
     separated_foldl1(
-        second_level,
+        third_level,
         (multispace0, alt(('+', '-')), multispace0),
         |lhs, (_, op_sign, _), rhs| {
             let op = if op_sign == '+' { Op::Add } else { Op::Sub };
@@ -70,9 +94,9 @@ fn third_level(input: &mut &str) -> Result<Expression> {
 }
 
 // Conditions
-fn fourth_level(input: &mut &str) -> Result<Expression> {
+fn fifth_level(input: &mut &str) -> ModalResult<Expression> {
     separated_foldl1(
-        third_level,
+        fourth_level,
         (
             multispace0,
             alt(("==", "!=", ">", ">=", "<", "<=")),
@@ -98,7 +122,7 @@ fn fourth_level(input: &mut &str) -> Result<Expression> {
     .parse_next(input)
 }
 
-fn boolean(input: &mut &str) -> Result<Expression> {
+fn boolean(input: &mut &str) -> ModalResult<Expression> {
     alt((
         "true".value(Expression::Bool(true)),
         "false".value(Expression::Bool(false)),
@@ -106,7 +130,7 @@ fn boolean(input: &mut &str) -> Result<Expression> {
     .parse_next(input)
 }
 
-fn atom_identifier(input: &mut &str) -> Result<Expression> {
+fn atom_identifier(input: &mut &str) -> ModalResult<Expression> {
     (identifier, opt(arguments))
         .map(|(id, p)| match p {
             Some(p) => Expression::Call(id, p),
@@ -115,7 +139,7 @@ fn atom_identifier(input: &mut &str) -> Result<Expression> {
         .parse_next(input)
 }
 
-pub fn arguments(input: &mut &str) -> Result<Vec<Expression>> {
+pub fn arguments(input: &mut &str) -> ModalResult<Vec<Expression>> {
     delimited(
         (multispace0, '(', multispace0),
         opt(separated(0.., expression, (multispace0, ',', multispace0))),
@@ -128,7 +152,7 @@ pub fn arguments(input: &mut &str) -> Result<Vec<Expression>> {
     .parse_next(input)
 }
 
-pub fn vector(input: &mut &str) -> Result<Expression> {
+pub fn vector(input: &mut &str) -> ModalResult<Expression> {
     delimited(
         (multispace0, '(', multispace0),
         (
@@ -144,7 +168,7 @@ pub fn vector(input: &mut &str) -> Result<Expression> {
     .parse_next(input)
 }
 
-pub fn list(input: &mut &str) -> Result<Expression> {
+pub fn list(input: &mut &str) -> ModalResult<Expression> {
     delimited(
         (multispace0, '[', multispace0),
         separated(0.., expression, (multispace0, ',', multispace0)),
@@ -154,12 +178,8 @@ pub fn list(input: &mut &str) -> Result<Expression> {
     .parse_next(input)
 }
 
-pub fn pattern(input: &mut &str) -> Result<Expression> {
-    delimited(
-        (multispace0, '['),
-        sigil_call,
-        (']', multispace0),
-    )
-	.map(|sigil| Expression::Pattern(sigil))
-    .parse_next(input)
+pub fn pattern(input: &mut &str) -> ModalResult<Expression> {
+    delimited((multispace0, '['), sigil_call, (']', multispace0))
+        .map(|sigil| Expression::Pattern(sigil))
+        .parse_next(input)
 }

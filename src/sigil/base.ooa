@@ -1,31 +1,39 @@
 // Basic Patterns
+sigil [Mind's Reflection] () -> (Entity) {NORTH_EAST qaq}
+sigil [Compass' Purification] (Entity) -> (Vector) {EAST aa}
+sigil [Compass' Purification II] (Entity) -> (Vector) {NORTH_EAST dd}
+sigil [Alidade's Purification] (Entity) -> (Vector) {EAST wa}
+sigil [Archer's Distillation] (Vector, Vector) -> (Vector)
+sigil [Architect's Distillation] (Vector, Vector) -> (Vector)
+sigil [Scout's Distillation] (Vector, Vector) -> (Entity)
+sigil [Reveal] (Any) -> (Any)
+sigil [Stadiometer's Purification] (Entity) -> (Num)
+sigil [Pace Purification] (Entity) -> (Vector)
 
-sigil [Mind's Reflection] () -> (Entity) {
-    NORTH_EAST qaq
-}
+// Mathematics
+sigil [Additive Distillation] (Num, Num) -> (Num)
+sigil [Subtractive Distillation] (Num, Num) -> (Num)
+sigil [Multiplicative Distillation] (Num, Num) -> (Num)
+sigil [Division Distillation] (Num, Num) -> (Num)
+sigil [Modulus Distillation] (Num, Num) -> (Num)
+sigil [Power Distillation] (Num, Num) -> (Num)
+sigil [Length Purification] (Num) -> (Num)
 
-sigil [Compass' Purification] (Entity) -> (Vector) {
-	EAST aa
-}
-
-sigil [Compass' Purification II] (Entity) -> (Vector) {
-	NORTH_EAST dd
-}
-
-sigil [Alidade's Purification] (Entity) -> (Vector) {
-	EAST wa
-}
-
+// Number Literals
 sigil [Numerical Reflection] () -> (Num)
 
+// Stack Manipulation
 sigil [Bookkeeper's Gambit] (Many) -> (Many)
 
 // Logical Operators
-
 sigil [Equality Distillation] (Any, Any) -> (Bool)
+sigil [Inequality Distillation] (Any, Any) -> (Bool)
+sigil [Maximus Distillation] (Any, Any) -> (Bool)
+sigil [Maximus Distillation II] (Any, Any) -> (Bool)
+sigil [Minimus Distillation] (Any, Any) -> (Bool)
+sigil [Minimus Distillation II] (Any, Any) -> (Bool)
 
 // Escaping Patterns
-
 sigil [Introspection] () -> ()
-
 sigil [Retrospection] () -> (List)
+sigil [Consideration] () -> (Pattern)

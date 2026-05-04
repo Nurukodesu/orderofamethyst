@@ -1,10 +1,7 @@
 use std::str::FromStr;
 
 use winnow::{
-    Parser, Result,
-    ascii::{multispace0, multispace1},
-    combinator::{alt, delimited, opt, preceded, repeat, separated, separated_pair, terminated},
-    token::{take_till, take_while},
+    ModalResult, Parser, ascii::{multispace0, multispace1}, combinator::{alt, cut_err, delimited, opt, preceded, repeat, separated, separated_pair, terminated}, error::StrContext, token::{take_till, take_while}
 };
 
 use crate::{
@@ -12,7 +9,7 @@ use crate::{
     parser::common::{identifier, iota_type, parameters, ret_type},
 };
 
-fn sigil_name(input: &mut &str) -> Result<String> {
+fn sigil_name(input: &mut &str) -> ModalResult<String> {
     delimited(
         (multispace0, '['),
         take_till(1.., |c| c == ']'),
@@ -22,7 +19,7 @@ fn sigil_name(input: &mut &str) -> Result<String> {
     .parse_next(input)
 }
 
-pub fn sigil_io(input: &mut &str) -> Result<Vec<IotaType>> {
+pub fn sigil_io(input: &mut &str) -> ModalResult<Vec<IotaType>> {
     delimited(
         (multispace0, '(', multispace0),
         separated(0.., iota_type, (multispace0, ',', multispace0)),
@@ -31,7 +28,7 @@ pub fn sigil_io(input: &mut &str) -> Result<Vec<IotaType>> {
     .parse_next(input)
 }
 
-pub fn direction(input: &mut &str) -> Result<Direction> {
+pub fn direction(input: &mut &str) -> ModalResult<Direction> {
     alt((
         "NORTH_EAST".value(Direction::NORTHEAST),
         "EAST".value(Direction::EAST),
@@ -43,13 +40,13 @@ pub fn direction(input: &mut &str) -> Result<Direction> {
     .parse_next(input)
 }
 
-fn angle_path(input: &mut &str) -> Result<AnglePath> {
+fn angle_path(input: &mut &str) -> ModalResult<AnglePath> {
     take_while(0.., ('w', 'e', 'd', 'q', 'a'))
         .map(|s| AnglePath::from_str(s).unwrap())
         .parse_next(input)
 }
 
-pub fn sigil_declaration(input: &mut &str) -> Result<Statement> {
+pub fn sigil_declaration(input: &mut &str) -> ModalResult<Statement> {
     preceded(
         (multispace0, "sigil", multispace1),
         (
@@ -82,13 +79,13 @@ pub fn sigil_declaration(input: &mut &str) -> Result<Statement> {
     .parse_next(input)
 }
 
-fn sigil_identifier(input: &mut &str) -> Result<String> {
+fn sigil_identifier(input: &mut &str) -> ModalResult<String> {
     take_while(0.., ('a'..='z', 'A'..='Z', '\'', ' '))
         .map(|s: &str| s.to_string())
         .parse_next(input)
 }
 
-fn sigil_modifier(input: &mut &str) -> Result<Option<String>> {
+fn sigil_modifier(input: &mut &str) -> ModalResult<Option<String>> {
     opt(preceded(
         (multispace0, ':', multispace0),
         take_while(0.., ('0'..='9', 'a'..='z', 'A'..='Z', '-', '_', '\'', ' ')),
@@ -100,7 +97,7 @@ fn sigil_modifier(input: &mut &str) -> Result<Option<String>> {
     .parse_next(input)
 }
 
-pub fn sigil_call(input: &mut &str) -> Result<SigilCall> {
+pub fn sigil_call(input: &mut &str) -> ModalResult<SigilCall> {
     terminated(
         (sigil_identifier, sigil_modifier),
         (multispace0, ';', multispace0),
@@ -109,16 +106,17 @@ pub fn sigil_call(input: &mut &str) -> Result<SigilCall> {
     .parse_next(input)
 }
 
-fn fn_body(input: &mut &str) -> Result<Vec<SigilCall>> {
-    delimited(
+fn fn_body(input: &mut &str) -> ModalResult<Vec<SigilCall>> {
+    cut_err(delimited(
         (multispace0, '{', multispace0),
         repeat(0.., sigil_call),
         (multispace0, '}', multispace0),
-    )
+    ))
+	.context(StrContext::Label("function: missing body"))
     .parse_next(input)
 }
 
-pub fn raw_function_declaration(input: &mut &str) -> Result<Statement> {
+pub fn raw_function_declaration(input: &mut &str) -> ModalResult<Statement> {
     preceded(
         (multispace0, "rawfn", multispace1),
         (identifier, parameters, ret_type, fn_body),

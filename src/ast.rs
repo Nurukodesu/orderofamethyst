@@ -25,6 +25,7 @@ pub enum Op {
     Mul,
     Div,
     Mod,
+	Power,
     Equal,
     NotEqual,
     GreaterThan,
@@ -37,8 +38,8 @@ pub enum Op {
 pub enum IotaType {
     Any,
     Num,
-    Bool,
     Vector,
+    Bool,
     Entity,
     Pattern,
     List,
@@ -73,6 +74,7 @@ pub enum Statement {
         then_block: Block,
         else_block: Block,
     },
+	Empty
 }
 #[derive(Debug)]
 pub struct Block {
@@ -382,6 +384,7 @@ impl Expression {
                     Op::Mul => "Multiplicative Distillation",
                     Op::Div => "Division Distillation",
                     Op::Mod => "Modulus Distillation",
+					Op::Power => "POwer Distillation",
                     Op::Equal => "Equality Distillation",
                     Op::NotEqual => "Inequality Distillation",
                     Op::GreaterThan => "Maximus Distillation",
@@ -412,6 +415,7 @@ impl Expression {
                         Op::Mul => *self = Expression::Num(a * b),
                         Op::Div => *self = Expression::Num(a / b),
                         Op::Mod => *self = Expression::Num(a % b),
+						Op::Power => *self = Expression::Num(a.powf(*b)),
                         Op::Equal => *self = Expression::Bool(a == b),
                         Op::NotEqual => *self = Expression::Bool(a != b),
                         Op::GreaterThan => *self = Expression::Bool(a > b),
@@ -425,6 +429,7 @@ impl Expression {
                         Op::Mul => *self = Expression::Vector(n * x, n * y, n * z),
                         Op::Div => *self = Expression::Vector(n / x, n / y, n / z),
                         Op::Mod => *self = Expression::Vector(n % x, n % y, n % z),
+						Op::Power => *self = Expression::Vector(n.powf(*x), n.powf(*y), n.powf(*z)),
                         Op::Equal => *self = Expression::Bool(false),
                         Op::NotEqual => *self = Expression::Bool(false),
                         Op::GreaterThan => *self = Expression::Bool(false),
@@ -438,6 +443,7 @@ impl Expression {
                         Op::Mul => *self = Expression::Vector(x * n, y * n, z * n),
                         Op::Div => *self = Expression::Vector(x / n, y / n, z / n),
                         Op::Mod => *self = Expression::Vector(x % n, y % n, z % n),
+						Op::Power => *self = Expression::Vector(x.powf(*n), y.powf(*n), z.powf(*n)),
                         Op::Equal => *self = Expression::Bool(false),
                         Op::NotEqual => *self = Expression::Bool(false),
                         Op::GreaterThan => *self = Expression::Bool(false),
@@ -451,6 +457,7 @@ impl Expression {
                         Op::Mul => *self = Expression::Vector(x1 * x2, y1 * y2, z1 * z2),
                         Op::Div => *self = Expression::Vector(x1 / x2, y1 / y2, z1 / z2),
                         Op::Mod => *self = Expression::Vector(x1 % x2, y1 % y2, z1 % z2),
+						Op::Power => (),
                         Op::Equal => *self = Expression::Bool(x1 == x2 && y1 == y2 && z1 == z2),
                         Op::NotEqual => *self = Expression::Bool(x1 != x2 && y1 != y2 && z1 != z2),
                         Op::GreaterThan => *self = Expression::Bool(x1 > x2 && y1 > y2 && z1 > z2),
@@ -560,6 +567,7 @@ impl Statement {
                 then_block.scope(symtable, sigiltable, ir);
                 else_block.scope(symtable, sigiltable, ir);
             }
+			Statement::Empty => (),
         }
     }
 
